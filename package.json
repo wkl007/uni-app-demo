@@ -1,0 +1,11 @@
+{
+  "name": "uni-app-demo",
+  "version": "1.0.0",
+  "description": "uni-app学习demo",
+  "author": "wkl",
+  "license": "ISC",
+  "dependencies": {
+    "animate.css": "^3.7.2",
+    "flyio": "^0.6.14"
+  }
+}
