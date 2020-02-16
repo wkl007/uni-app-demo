@@ -29,6 +29,10 @@ export default {
 				{
 					name: 'request请求',
 					url: '/pages/request/request'
+				},
+				{
+					name:'ucharts图表',
+					url:'/pages/ucharts/ucharts'
 				}
 			]
 		};

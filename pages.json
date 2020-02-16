@@ -20,11 +20,17 @@
 			"style": {
 				"navigationBarTitleText": "富文本解析"
 			}
-		}, 
+		},
 		{
 			"path": "pages/request/request",
 			"style": {
 				"navigationBarTitleText": "request请求"
+			}
+		}, 
+		{
+			"path": "pages/ucharts/ucharts",
+			"style": {
+				"navigationBarTitleText": "ucharts图表"
 			}
 		}
 	],
