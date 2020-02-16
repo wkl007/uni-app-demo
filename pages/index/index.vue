@@ -1,16 +1,21 @@
 <template>
 	<view class="index">
 		<image class="logo" src="/static/logo.png"></image>
-		<view class="page-list">
-			<view class="page-item" v-for="(item, index) in pageList" :key="index" @click="goPage(item.url)">
-				<text>{{ item.name }}</text>
-			</view>
-		</view>
+		<uni-grid :column="3" @change="handleChange">
+			<uni-grid-item v-for="(item, index) in pageList" :key="index" :index="index">
+				<text class="text">{{ item.name }}</text>
+			</uni-grid-item>
+		</uni-grid>
 	</view>
 </template>
 
 <script>
+import { uniGrid, uniGridItem } from '@dcloudio/uni-ui';
 export default {
+	components: {
+		uniGrid,
+		uniGridItem
+	},
 	data() {
 		return {
 			pageList: [
@@ -19,7 +24,7 @@ export default {
 					url: '/pages/animate/animate'
 				},
 				{
-					name: '字体',
+					name: '字体图标',
 					url: '/pages/font/font'
 				},
 				{
@@ -31,8 +36,16 @@ export default {
 					url: '/pages/request/request'
 				},
 				{
-					name:'ucharts图表',
-					url:'/pages/ucharts/ucharts'
+					name: 'ucharts图表',
+					url: '/pages/ucharts/ucharts'
+				},
+				{
+					name:'uni-ui演示',
+					url:'/pages/uniUI/uniUI'
+				},
+				{
+					name:'tabList演示',
+					url:'/pages/tabList/tabList'
 				}
 			]
 		};
@@ -45,6 +58,9 @@ export default {
 			uni.navigateTo({
 				url
 			});
+		},
+		handleChange({detail:{index}}) {
+			this.goPage(this.pageList[index].url)
 		}
 	}
 };
@@ -52,10 +68,7 @@ export default {
 
 <style lang="scss">
 .index {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
+	text-align: center;
 	.logo {
 		height: 200rpx;
 		width: 200rpx;
@@ -64,15 +77,8 @@ export default {
 		margin-right: auto;
 		margin-bottom: 50rpx;
 	}
-	.page-list {
-		width: 750rpx;
-		display: flex;
-		flex-wrap: wrap;
-		.page-item {
-			width: 375rpx;
-			text-align: center;
-			line-height: 100rpx;
-		}
+	.text{
+		line-height: 248rpx;
 	}
 }
 </style>

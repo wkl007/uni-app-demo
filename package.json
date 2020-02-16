@@ -5,6 +5,7 @@
   "author": "wkl",
   "license": "ISC",
   "dependencies": {
+    "@dcloudio/uni-ui": "^1.1.8",
     "flyio": "^0.6.14"
   }
 }
