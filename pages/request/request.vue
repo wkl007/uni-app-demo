@@ -1,20 +1,26 @@
 <template>
-	<html-parse :html="html"/>
+	<html-parse :html="html" />
 </template>
 
 <script>
-//#ifdef MP-WEIXIN
-import Fly from 'flyio/dist/npm/wx';
-const fly = new Fly();
-// #endif
-
-//#ifndef MP-WEIXIN
-import fly from 'flyio';
-// #endif
 import HtmlParse from '@/components/html-parse/html-parse.vue';
 
+//#ifdef MP
+let Fly = require('flyio/dist/npm/wx');
+let fly = new Fly();
+// #endif
+
+//#ifdef H5
+let fly = require('flyio');
+//#endif
+
+//#ifdef APP-PLUS
+let Fly = require('flyio/dist/npm/weex');
+let fly = new Fly();
+//#endif
+
 export default {
-	components:{
+	components: {
 		HtmlParse
 	},
 	data() {

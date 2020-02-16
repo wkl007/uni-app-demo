@@ -15,7 +15,7 @@ export default {
 		console.log('load');
 	},
 	onReady() {
-		console.log('ready')
+		console.log('ready');
 	},
 	methods: {}
 };
