@@ -46,6 +46,10 @@ export default {
 				{
 					name:'tabList演示',
 					url:'/pages/tabList/tabList'
+				},
+				{
+					name:'自定义导航',
+					url:'/pages/navBar/navBar'
 				}
 			]
 		};

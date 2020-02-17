@@ -45,6 +45,21 @@
 				"navigationBarTitleText": "tabList列表演示",
 				"enablePullDownRefresh": true
 			}
+		},
+		{
+			"path": "pages/navBar/navBar",
+			"style": {
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true,
+				"app-plus": {
+					"titleNView": false,
+					"bounce": "none",
+					"pullToRefresh": {
+						"style": "circle",
+						"offset": "50px"
+					}
+				}
+			}
 		}
 	],
 	"globalStyle": {
