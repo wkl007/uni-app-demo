@@ -5,12 +5,7 @@
 </template>
 
 <script>
-import HtmlParse from '@/components/html-parse/html-parse.vue';
-
 export default {
-	components: {
-		HtmlParse
-	},
 	data() {
 		return {
 			html:`<p><img style="max-width: 100%; display: block; margin-left: auto; margin-right: auto;" src="https://shancai-1257275967.coscd.myqcloud.com/shancai/images/20190728/center2019072806291596.png" /></p>

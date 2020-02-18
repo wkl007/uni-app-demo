@@ -1,10 +1,8 @@
 <template>
-	<html-parse :html="html" />
+	<html-parse :html="html"/>
 </template>
 
 <script>
-import HtmlParse from '@/components/html-parse/html-parse.vue';
-
 //#ifdef MP
 let Fly = require('flyio/dist/npm/wx');
 let fly = new Fly();
@@ -20,9 +18,6 @@ let fly = new Fly();
 //#endif
 
 export default {
-	components: {
-		HtmlParse
-	},
 	data() {
 		return {
 			url: 'https://guixiang.oss-cn-chengdu.aliyuncs.com/website/caches/news1.html',

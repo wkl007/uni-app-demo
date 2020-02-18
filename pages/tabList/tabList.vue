@@ -5,7 +5,18 @@
 		</view>
 		<swiper class="tab-content" :current="tabIndex" :duration="300" @change="handleSwiperChange">
 			<swiper-item v-for="(item, index) in tabList" :key="index">
-				<scroll-view scroll-y style="height: 100%;" enableBackToTop @scrolltolower="loadMore()">
+				<scroll-view
+					:key="index"
+					scroll-y
+					style="height: 100%;"
+					enableBackToTop
+					@scrolltolower="loadMore()"
+					refresher-enabled
+					:refresher-threshold="100"
+					refresher-background="lightgreen"
+					:refresher-triggered="item.triggered"
+					@refresherrefresh="handleRefresh"
+				>
 					<view class="list-item" v-for="(item, index) in list" :key="index">{{ item }}</view>
 				</scroll-view>
 			</swiper-item>
@@ -22,22 +33,31 @@ export default {
 					id: 'tab01',
 					name: '大公司',
 					newsid: 23,
-					active: true
+					active: true,
+					triggered: false
 				},
 				{
 					id: 'tab02',
 					name: '内容',
-					newsid: 223
+					newsid: 223,
+					triggered: false
 				},
 				{
 					id: 'tab03',
 					name: '消费',
-					newsid: 221
+					newsid: 221,
+					triggered: false
 				}
 			],
 			tabIndex: 0,
 			list: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 		};
+	},
+	onLoad() {
+		this.tabList[0].triggered = true;
+		setTimeout(() => {
+			this.tabList[0].triggered = false;
+		}, 3000);
 	},
 	onPullDownRefresh() {
 		console.log('refresh');
@@ -46,6 +66,16 @@ export default {
 		}, 1000);
 	},
 	methods: {
+		// 自定义下拉刷新
+		handleRefresh() {
+			if (this._freshing) return;
+			this._freshing = true;
+			this.tabList[this.tabIndex].triggered = true;
+			setTimeout(() => {
+			this.tabList[this.tabIndex].triggered = false;
+				this._freshing = false;
+			}, 1000);
+		},
 		handleTabClick(item, index) {
 			if (item.active) return;
 			this.tabList.forEach(i => {
@@ -62,8 +92,8 @@ export default {
 			this.tabList[current].active = true;
 			this.tabIndex = current;
 		},
-		loadMore(){
-			console.log('next')
+		loadMore() {
+			console.log('next');
 		}
 	}
 };
