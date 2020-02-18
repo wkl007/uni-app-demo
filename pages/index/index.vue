@@ -11,6 +11,7 @@
 
 <script>
 import { uniGrid, uniGridItem } from '@dcloudio/uni-ui';
+
 export default {
 	components: {
 		uniGrid,
@@ -40,16 +41,24 @@ export default {
 					url: '/pages/ucharts/ucharts'
 				},
 				{
-					name:'uni-ui演示',
-					url:'/pages/uniUI/uniUI'
+					name: 'uni-ui演示',
+					url: '/pages/uniUI/uniUI'
 				},
 				{
-					name:'tabList演示',
-					url:'/pages/tabList/tabList'
+					name: 'tabList演示',
+					url: '/pages/tabList/tabList'
 				},
 				{
-					name:'自定义导航',
-					url:'/pages/navBar/navBar'
+					name: '自定义导航',
+					url: '/pages/navBar/navBar'
+				},
+				{
+					name: 'vuex演示',
+					url: '/pages/vuex/vuex'
+				},
+				{
+					name:'过滤器演示',
+					url:'/pages/filter/filter'
 				}
 			]
 		};
@@ -63,26 +72,32 @@ export default {
 				url
 			});
 		},
-		handleChange({detail:{index}}) {
-			this.goPage(this.pageList[index].url)
+		handleChange({ detail: { index } }) {
+			this.goPage(this.pageList[index].url);
 		}
 	}
 };
 </script>
 
 <style lang="scss">
+@function rpx($value) {
+	@return $value * 1rpx;
+}
+
 .index {
 	text-align: center;
+
 	.logo {
-		height: 200rpx;
-		width: 200rpx;
-		margin-top: 200rpx;
+		height: rpx(200);
+		width: rpx(200);
+		margin-top: rpx(200);
 		margin-left: auto;
 		margin-right: auto;
-		margin-bottom: 50rpx;
+		margin-bottom: rpx(50);
 	}
-	.text{
-		line-height: 248rpx;
+
+	.text {
+		line-height: rpx(248);
 	}
 }
 </style>

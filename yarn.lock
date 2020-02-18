@@ -75,6 +75,11 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
+dayjs@^1.8.20:
+  version "1.8.20"
+  resolved "https://registry.npm.taobao.org/dayjs/download/dayjs-1.8.20.tgz?cache=0&sync_timestamp=1580814120772&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fdayjs%2Fdownload%2Fdayjs-1.8.20.tgz#724a5cb6ad1f6fc066b0bd9a800dedcc7886f19e"
+  integrity sha1-ckpctq0fb8BmsL2agA3tzHiG8Z4=
+
 delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.npm.taobao.org/delayed-stream/download/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
@@ -214,6 +219,16 @@ mime-types@^2.1.12, mime-types@~2.1.19:
   integrity sha1-nJIfwJt+FJpl39wNpNIJlyALCgY=
   dependencies:
     mime-db "1.43.0"
+
+numeral@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.npm.taobao.org/numeral/download/numeral-2.0.6.tgz#4ad080936d443c2561aed9f2197efffe25f4e506"
+  integrity sha1-StCAk21EPCVhrtnyGX7//iX05QY=
+
+nzh@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.npm.taobao.org/nzh/download/nzh-1.0.4.tgz#bded5492cd7148fa5fe1c809fa61932a899769c5"
+  integrity sha1-ve1Uks1xSPpf4cgJ+mGTKomXacU=
 
 oauth-sign@~0.9.0:
   version "0.9.0"

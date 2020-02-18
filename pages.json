@@ -70,6 +70,17 @@
 					}
 				}
 			}
+		},
+		{
+			"path": "pages/vuex/vuex",
+			"style": {
+				"navigationBarTitleText": "vuex演示"
+			}
+		}, {
+			"path": "pages/filter/filter",
+			"style": {
+				"navigationBarTitleText":"过滤器演示"
+			}
 		}
 	],
 	"globalStyle": {
@@ -119,6 +130,16 @@
 				"name": "自定义导航",
 				"path": "pages/navBar/navBar",
 				"query": ""
+			},
+			{
+				"name": "vuex演示",
+				"path": "pages/vuex/vuex",
+				"query": ""
+			},
+			{
+				"name":"过滤器演示",
+				"path":"pages/filter/filter",
+				"query":""
 			}
 		]
 	}
