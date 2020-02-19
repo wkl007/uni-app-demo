@@ -1,31 +1,12 @@
-var inlineTags = {
-	abbr: true,
-	b: true,
-	big: true,
-	code: true,
-	del: true,
-	em: true,
-	font: true,
-	i: true,
-	ins: true,
-	label: true,
-	mark: true,
-	q: true,
-	s: true,
-	small: true,
-	span: true,
-	strong: true,
-	u: true
-}
 export default {
 	getStyle: function(style, display) {
 		var tmp, res = "";
 		if (style) {
 			style = style.toLowerCase();
-			if (style.indexOf("float") != -1) res += style.match(getRegExp("float[^;]+(?![\s\S]*?float)"))[0];
+			if (style.indexOf("float") != -1) res += style.match(getRegExp("float[^;]+", "g")).pop();
 			if (style.indexOf("margin") != -1) res += (';' + style.match(getRegExp("margin[^;]+", "g")).join(';'));
-			if (style.indexOf("display") != -1 && (tmp = style.match(getRegExp("display\s*:\s*([^;]*)(?![\s\S]*?display)")),
-					tmp[1].indexOf("flex") == -1)) res += (';' + tmp[0]);
+			if (style.indexOf("display") != -1 && (tmp = style.match(getRegExp("display[^;]+", "g")).pop(), tmp.indexOf("flex") ==
+					-1)) res += (';' + tmp);
 			else res += (';display:' + display);
 			tmp = style.match(getRegExp("flex[^;]*:[^;]+", "g"));
 			if (tmp) res += (';' + tmp.join(';'));

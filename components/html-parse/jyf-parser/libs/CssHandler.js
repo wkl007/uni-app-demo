@@ -18,9 +18,6 @@ class CssHandler {
 		this.styles = new CssParser(style, this.styles).parse();
 		return data;
 	};
-	parseCss(css) {
-		return new CssParser(css, {}, true).parse();
-	};
 	match(name, attrs) {
 		var tmp, matched = ((tmp = this.styles[name]) ? (tmp + ';') : '');
 		if (attrs.class) {
@@ -36,15 +33,13 @@ class CssHandler {
 }
 module.exports = CssHandler;
 class CssParser {
-	constructor(data, tagStyle, api) {
+	constructor(data, tagStyle) {
 		this.data = data;
 		this.res = tagStyle;
-		// 非 api 调用则加入 userAgentStyles
-		if (!api)
-			for (var item in config.userAgentStyles) {
-				if (tagStyle[item]) tagStyle[item] = config.userAgentStyles[item] + ';' + tagStyle[item];
-				else tagStyle[item] = config.userAgentStyles[item];
-			}
+		for (var item in config.userAgentStyles) {
+			if (tagStyle[item]) tagStyle[item] = config.userAgentStyles[item] + ';' + tagStyle[item];
+			else tagStyle[item] = config.userAgentStyles[item];
+		}
 		this._floor = 0;
 		this._i = 0;
 		this._list = [];

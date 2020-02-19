@@ -1,6 +1,6 @@
 /* 配置文件 */
 function makeMap(str) {
-	var map = Object.create(null),
+	var map = {},
 		list = str.split(',');
 	for (var i = list.length; i--;)
 		map[list[i]] = true;
@@ -28,6 +28,8 @@ const trustTags = makeMap(
 );
 // 块级标签，将被转为 div
 const blockTags = makeMap("address,article,aside,body,center,cite,footer,header,html,nav,pre,section");
+// 行内标签
+const inlineTags = makeMap("abbr,b,big,code,del,em,font,i,ins,label,mark,q,s,small,span,strong,u");
 // 被移除的标签（其中 svg 系列标签会被转为图片） 
 const ignoreTags = makeMap(
 	"area,base,basefont,canvas,circle,command,ellipse,embed,frame,head,iframe,input,isindex,keygen,line,link,map,meta,param,path,polygon,rect,script,source,svg,textarea,track,use,wbr"
@@ -48,7 +50,6 @@ var userAgentStyles = {
 	blockquote: "background-color:#f6f6f6;border-left:3px solid #dbdbdb;color:#6c6c6c;padding:5px 0 5px 10px",
 	center: "text-align:center",
 	cite: "font-style:italic",
-	code: "padding:0 1px 0 1px;margin-left:2px;margin-right:2px;background-color:#f8f8f8;border-radius:3px",
 	dd: "margin-left:40px",
 	img: "max-width:100%",
 	mark: "background-color:yellow",
@@ -56,26 +57,10 @@ var userAgentStyles = {
 	s: "text-decoration:line-through",
 	u: "text-decoration:underline"
 };
-const rpx = uni.getSystemInfoSync().screenWidth / 750;
-// #ifndef MP-ALIPAY || H5
-const SDKVersion = uni.getSystemInfoSync().SDKVersion;
-
-function versionHigherThan(version = '') {
-	var v1 = SDKVersion.split('.'),
-		v2 = version.split('.');
-	while (v1.length != v2.length)
-		v1.length < v2.length ? v1.push('0') : v2.push('0');
-	for (var i = 0; i < v1.length; i++) {
-		if (v1[i] == v2[i]) continue;
-		if (parseInt(v1[i]) > parseInt(v2[i])) return true;
-		return false;
-	}
-	return true;
-};
-// #endif
-// #ifdef MP-WEIXIN || MP-QQ
+const screenWidth = wx.getSystemInfoSync().screenWidth;
+// #ifdef MP-WEIXIN
 // 版本兼容
-if (versionHigherThan("2.7.1")) {
+if (wx.canIUse("editor")) {
 	trustTags.bdi = true;
 	trustTags.bdo = true;
 	trustTags.caption = true;
@@ -92,13 +77,14 @@ if (versionHigherThan("2.7.1")) {
 	richOnlyTags.ruby = true;
 	richOnlyTags.pre = true;
 	blockTags.pre = undefined;
-} else 
+} else
 // #endif
 {
 	blockTags.caption = true;
 	userAgentStyles.big = "display:inline;font-size:1.2em";
 	userAgentStyles.small = "display:inline;font-size:0.8em";
 }
+
 function bubbling(Parser) {
 	for (var i = Parser._STACK.length; i--;) {
 		if (!richOnlyTags[Parser._STACK[i].name])
@@ -126,9 +112,15 @@ module.exports = {
 					node.attrs.src = node.attrs.src || node.attrs["data-src"];
 					node.attrs["data-src"] = undefined;
 				}
-				// #ifdef MP-BAIDU || MP-TOUTIAO
-				if (Parser._imgMode == "widthFix") node.attrs.style = node.attrs.style + ";height:auto !important;";
-				// #endif
+				// 当设置的宽度超过屏幕宽度时自动宽度自适应
+				var styles = node.attrs.style.split(";");
+				for (var i = styles.length, item; item = styles[--i];)
+					if (item.includes("width") && !item.includes('%') && parseInt(item.split(':').pop()) > screenWidth) {
+						node.attrs.style += ";height:auto !important";
+						break;
+					}
+				if (node.attrs.width && parseInt(node.attrs.width) > screenWidth)
+					node.attrs.style += ";height:auto !important";
 				if (node.attrs.src && !node.attrs.ignore) {
 					if (bubbling(Parser)) node.attrs.i = (Parser._imgNum++).toString();
 					else node.attrs.ignore = "true";
@@ -198,7 +190,7 @@ module.exports = {
 			})
 		if (node.attrs.style.includes("rpx"))
 			node.attrs.style = node.attrs.style.replace(/[0-9.]*rpx/, function($) {
-				return parseFloat($) * rpx + "px";
+				return parseFloat($) * screenWidth / 750 + "px";
 			})
 		if (!node.attrs.style) node.attrs.style = undefined;
 		if (Parser._useAnchor && node.attrs.id) bubbling(Parser);
@@ -206,13 +198,13 @@ module.exports = {
 	trustAttrs,
 	trustTags,
 	blockTags,
+	inlineTags,
 	ignoreTags,
 	selfClosingTags,
 	blankChar,
 	userAgentStyles,
-	// #ifndef MP-ALIPAY || H5
-	versionHigherThan,
-	// #endif
 	makeMap,
-	rpx
+	// #ifdef H5
+	rpx: screenWidth / 750,
+	// #endif
 }

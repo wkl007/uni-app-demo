@@ -6,10 +6,10 @@
 */
 const CssHandler = require("./CssHandler.js");
 const config = require("./config.js");
+const blankChar = config.blankChar;
 var emoji; // 需要使用 emoji 补丁包时将此行改为 const emoji = require("./emoji.js");
 class MpHtmlParser {
-	constructor(data, options = {}, cb) {
-		this.cb = cb;
+	constructor(data, options = {}) {
 		this.CssHandler = new CssHandler(options.tagStyle);
 		this.data = data;
 		this.DOM = [];
@@ -86,9 +86,7 @@ class MpHtmlParser {
 		setContain(this.DOM);
 		// #endif
 		if (this.DOM.length) this.DOM[0].PoweredBy = "Parser";
-		if (this.cb)
-			this.cb(this.DOM)
-		else return this.DOM;
+		return this.DOM;
 	};
 	// 设置属性
 	setAttr() {
@@ -100,7 +98,7 @@ class MpHtmlParser {
 			this._attrs[this._attrName] = (this._attrValue ? this._attrValue : (this._attrName == "src" ? "" : "true"));
 		}
 		this._attrValue = '';
-		while (config.blankChar[this.data[this._i]]) this._i++;
+		while (blankChar[this.data[this._i]]) this._i++;
 		if (this.checkClose()) this.setNode();
 		else this._state = this.AttrName;
 	};
@@ -110,8 +108,8 @@ class MpHtmlParser {
 		if (!text) return;
 		if (!this._whiteSpace) {
 			// 移除空白符
-			for (var tmp = [], i = text.length, has = false; i--;)
-				if ((!config.blankChar[text[i]] && (has = true)) || !config.blankChar[tmp[0]]) tmp.unshift(text[i]);
+			for (var tmp = [], i = text.length, has = false, c; c = text[--i];)
+				if ((!blankChar[c] && (has = true)) || (!blankChar[tmp[0]] && (c = ' '))) tmp.unshift(c);
 			if (!has) return;
 			text = tmp.join('');
 		}
@@ -197,7 +195,7 @@ class MpHtmlParser {
 						(this._i = this.data.indexOf("</", this._i + 1)) == -1 ? this._i = this.data.length : null;
 						this._i += 2;
 						this._sectionStart = this._i;
-						while (!config.blankChar[this.data[this._i]] && this.data[this._i] != '>' && this.data[this._i] != '/') this._i++;
+						while (!blankChar[this.data[this._i]] && this.data[this._i] != '>' && this.data[this._i] != '/') this._i++;
 						if (this.data.substring(this._sectionStart, this._i).toLowerCase() == node.name) {
 							this._i = this.data.indexOf('>', this._i);
 							if (this._i == -1) this._i = this.data.length;
@@ -334,7 +332,7 @@ class MpHtmlParser {
 	};
 	getSelection(trim) {
 		var str = (this._sectionStart == this._i ? '' : this.data.substring(this._sectionStart, this._i));
-		while (trim && (config.blankChar[this.data[++this._i]] || (this._i--, false)));
+		while (trim && (blankChar[this.data[++this._i]] || (this._i--, false)));
 		this._sectionStart = this._i + 1;
 		return str;
 	};
@@ -372,7 +370,7 @@ class MpHtmlParser {
 		this._state = this.Text;
 	};
 	TagName(c) {
-		if (config.blankChar[c]) {
+		if (blankChar[c]) {
 			this._tagName = this.getSelection(true);
 			if (this.checkClose()) this.setNode();
 			else this._state = this.AttrName;
@@ -382,16 +380,16 @@ class MpHtmlParser {
 		}
 	};
 	AttrName(c) {
-		if (config.blankChar[c]) {
+		if (blankChar[c]) {
 			this._attrName = this.getSelection(true).toLowerCase();
 			if (this.data[this._i] == '=') {
-				while (config.blankChar[this.data[++this._i]]);
+				while (blankChar[this.data[++this._i]]);
 				this._sectionStart = this._i--;
 				this._state = this.AttrValue;
 			} else this.setAttr();
 		} else if (c == '=') {
 			this._attrName = this.getSelection().toLowerCase();
-			while (config.blankChar[this.data[++this._i]]);
+			while (blankChar[this.data[++this._i]]);
 			this._sectionStart = this._i--;
 			this._state = this.AttrValue;
 		} else if (this.checkClose()) {
@@ -404,13 +402,13 @@ class MpHtmlParser {
 			this._sectionStart++;
 			if ((this._i = this.data.indexOf(c, this._i + 1)) == -1) return this._i = this.data.length;
 		} else
-			for (; !config.blankChar[this.data[this._i]] && this.data[this._i] != '>'; this._i++);
+			for (; !blankChar[this.data[this._i]] && this.data[this._i] != '>'; this._i++);
 		this._attrValue = this.getSelection();
 		while (this._attrValue.includes("&quot;")) this._attrValue = this._attrValue.replace("&quot;", '');
 		this.setAttr();
 	};
 	EndTag(c) {
-		if (config.blankChar[c] || c == '>' || c == '/') {
+		if (blankChar[c] || c == '>' || c == '/') {
 			var name = this.getSelection().toLowerCase();
 			var flag = false;
 			for (var i = this._STACK.length; i--;)
@@ -438,7 +436,4 @@ class MpHtmlParser {
 		}
 	};
 };
-module.exports = {
-	parseHtml: (data, options) => new Promise((resolve) => new MpHtmlParser(data, options, resolve).parse()),
-	parseHtmlSync: (data, options) => new MpHtmlParser(data, options).parse()
-};
+module.exports = (data, options) => new MpHtmlParser(data, options).parse();

@@ -8,14 +8,13 @@
 <template>
 	<view style="display: inherit;">
 		<slot v-if="(!html||!html.length||(!html[0].name&&!html[0].type))&&!nodes.length"></slot>
-		<view class="_contain" :style="(selectable?'user-select:text;-webkit-user-select:text;':'')+(showWithAnimation?'opacity:0;':'')+'display:inherit;'"
+		<view class="_contain" :style="(selectable?'user-select:text;-webkit-user-select:text;':'')+(showWithAnimation?'opacity:0;':'')"
 		 :animation="showAnimation" @tap="tap" @touchstart="touchstart" @touchmove="touchmove">
 			<!--#ifdef H5-->
 			<div :id="'rtf'+uid"></div>
 			<!--#endif-->
 			<!--#ifndef H5-->
-			<trees :nodes="nodes.length?nodes:(html&&html.length&&(html[0].name||html[0].type)?html:[])" :imgMode="imgMode"
-			 :loadVideo="loadVideo" />
+			<trees :nodes="nodes.length?nodes:(html&&html.length&&(html[0].name||html[0].type)?html:[])" :loadVideo="loadVideo" />
 			<!--#endif-->
 		</view>
 	</view>
@@ -23,9 +22,9 @@
 
 <script>
 	// #ifndef H5
-	import trees from "./trees"
+	import trees from "./libs/trees"
 	var document; // document 补丁包，详见 https://jin-yufeng.github.io/Parser/#/instructions?id=document
-	const parseHtmlSync = require('./libs/MpHtmlParser.js').parseHtmlSync;
+	const parseHtml = require('./libs/MpHtmlParser.js');
 	const cache = getApp().parserCache = {};
 	const CssHandler = require("./libs/CssHandler.js");
 	// 散列函数（计算 cache 的 key）
@@ -42,7 +41,7 @@
 	const config = require('./libs/config.js');
 	// #ifdef MP-WEIXIN || MP-QQ || MP-BAIDU || MP-TOUTIAO
 	// 图片链接去重
-	function Deduplication(src) {
+	function Deduplicate(src) {
 		if (src.indexOf("http") != 0) return src;
 		var newSrc = '';
 		for (var i = 0; i < src.length; i++) {
@@ -80,20 +79,12 @@
 				type: null,
 				default: null
 			},
-			"autocopy": {
-				type: Boolean,
-				default: true
-			},
 			// #ifndef MP-ALIPAY
 			"autopause": {
 				type: Boolean,
 				default: true
 			},
 			// #endif
-			"autopreview": {
-				type: Boolean,
-				default: true
-			},
 			"autosetTitle": {
 				type: Boolean,
 				default: true
@@ -102,16 +93,12 @@
 				type: String,
 				default: null
 			},
-			// #ifndef MP-BAIDU || MP-ALIPAY
+			// #ifndef MP-BAIDU || MP-ALIPAY || APP-PLUS
 			"gestureZoom": {
 				type: Boolean,
 				default: false
 			},
 			// #endif
-			"imgMode": {
-				type: String,
-				default: 'default'
-			},
 			// #ifdef MP-WEIXIN || MP-QQ || H5 || APP-PLUS
 			"lazyLoad": {
 				type: Boolean,
@@ -156,7 +143,7 @@
 					// #ifndef MP-ALIPAY || APP-PLUS
 					var newSrc = f(this[i], i, this);
 					if (newSrc) {
-						if (this.includes(newSrc)) this[i] = Deduplication(newSrc);
+						if (this.includes(newSrc)) this[i] = Deduplicate(newSrc);
 						else this[i] = newSrc;
 					}
 					// #endif
@@ -184,7 +171,7 @@
 					if (this.rtf) this.rtf.parentNode.removeChild(this.rtf);
 					return;
 				}
-				if (typeof html != 'string') html = this.Dom2Str(html.nodes || html);
+				if (typeof html != "string") html = this.Dom2Str(html.nodes || html);
 				// 处理 rpx
 				if (html.includes("rpx"))
 					html = html.replace(/[0-9.]*rpx/g, function($) {
@@ -246,7 +233,7 @@
 								var preview = true;
 								this.ignore = () => preview = false;
 								component.$emit('imgtap', this);
-								if (preview && component.autopreview) {
+								if (preview) {
 									uni.previewImage({
 										current: this.i,
 										urls: component.imgList
@@ -330,7 +317,9 @@
 					this.showAnimation = showAnimation;
 				if (!observed) this.nodes = [0];
 				this.$nextTick(() => {
-					this.$emit("ready", this.rtf.getBoundingClientRect());
+					var rect = this.rtf.getBoundingClientRect();
+					this.width = rect.width;
+					this.$emit("ready", rect);
 				})
 			},
 			Dom2Str(nodes) {
@@ -353,6 +342,11 @@
 				return this.rtf.innerText;
 			},
 			navigateTo(obj) {
+				obj.fail = obj.fail || (() => {});
+				if (!this.useAnchor)
+					return obj.fail({
+						errMsg: "Use-anchor attribute is disabled"
+					})
 				if (!obj.id) {
 					window.scrollTo(0, this.rtf.offsetTop);
 					return obj.success ? obj.success({
@@ -360,9 +354,9 @@
 					}) : null;
 				}
 				var target = document.getElementById(obj.id);
-				if (!target) return obj.fail ? obj.fail({
-					errMsg: "Label Not Found"
-				}) : null;
+				if (!target) return obj.fail({
+					errMsg: "Label not found"
+				});
 				uni.pageScrollTo({
 					scrollTop: this.rtf.offsetTop + target.offsetTop,
 					success: obj.success,
@@ -391,10 +385,10 @@
 						if (cache[hash])
 							this.nodes = cache[hash];
 						else {
-							this.nodes = parseHtmlSync(html, this);
+							this.nodes = parseHtml(html, this);
 							cache[hash] = this.nodes;
 						}
-					} else this.nodes = parseHtmlSync(html, this);
+					} else this.nodes = parseHtml(html, this);
 					this.$emit('parse', this.nodes);
 				} else if (Object.prototype.toString.call(html) == "[object Array]") {
 					if (!observed) this.nodes = html;
@@ -462,7 +456,7 @@
 											// #ifndef MP-ALIPAY || APP-PLUS
 											if (this.imgList.indexOf(item.attrs.src) == -1)
 												this.imgList[item.attrs.i] = item.attrs.src;
-											else this.imgList[item.attrs.i] = Deduplication(item.attrs.src);
+											else this.imgList[item.attrs.i] = Deduplicate(item.attrs.src);
 											// #endif
 											// #ifdef MP-ALIPAY || APP-PLUS
 											this.imgList[item.attrs.i] = item.attrs.src;
@@ -522,10 +516,17 @@
 					// #ifdef MP-TOUTIAO
 					setTimeout(() => {
 						// #endif
-						getContext(this.$children)
-						uni.createSelectorQuery().in(this).select("._contain").boundingClientRect(res => {
+						getContext(this.$children);
+						// #ifndef APP-PLUS
+						this.createSelectorQuery()
+						// #endif
+						// #ifdef APP-PLUS
+						uni.createSelectorQuery().in(this)
+						// #endif
+						.select("._contain").boundingClientRect().exec(res => {
+							this.width = (res[0] ? res[0] : res).width;
 							this.$emit("ready", res);
-						}).exec();
+						});
 						// #ifdef MP-TOUTIAO
 					}, 200)
 					// #endif
@@ -560,15 +561,20 @@
 				return text;
 			},
 			navigateTo(obj) {
+				obj.fail = obj.fail || (() => {});
+				if (!this.useAnchor)
+					return obj.fail({
+						errMsg: "Use-anchor attribute is disabled"
+					})
 				var Scroll = (selector, component) => {
 					const query = uni.createSelectorQuery().in(component ? component : this);
 					query.select(selector).boundingClientRect();
 					query.selectViewport().scrollOffset();
 					query.exec(res => {
 						if (!res || !res[0])
-							return obj.fail ? obj.fail({
-								errMsg: "Label Not Found"
-							}) : null;
+							return obj.fail({
+								errMsg: "Label not found"
+							});
 						uni.pageScrollTo({
 							scrollTop: res[1].scrollTop + res[0].top,
 							success: obj.success,
@@ -592,19 +598,27 @@
 			},
 			// #endif
 			tap(e) {
-				// #ifndef MP-BAIDU || MP-ALIPAY
+				// #ifndef MP-BAIDU || MP-ALIPAY || APP-PLUS
 				if (this.gestureZoom && e.timeStamp - this.lastTime < 300) {
-					this.animation = uni.createAnimation({
-						transformOrigin: (e.touches[0].pageX - e.currentTarget.offsetLeft) + "px " + (e.touches[0].pageY - e.currentTarget
-							.offsetTop) + "px 0"
-					})
-					// #ifdef MP-TOUTIAO
-					this.animation.opacity(1);
-					// #endif
-					if (this.zoomIn)
-						this.animation.scale(1).step();
-					else {
+					if (this.zoomIn) {
+						this.animation.translateX(0).scale(1).step();
+						uni.pageScrollTo({
+							scrollTop: (e.touches[0].pageY - e.currentTarget.offsetTop + this.initY) / 2 - e.touches[0].clientY,
+							duration: 400
+						})
+					} else {
+						var initX = e.touches[0].pageX - e.currentTarget.offsetLeft;
+						this.initY = e.touches[0].pageY - e.currentTarget.offsetTop;
+						this.animation = uni.createAnimation({
+							transformOrigin: initX + "px " + this.initY + "px 0",
+							timingFunction: "ease-in-out"
+						});
+						// #ifdef MP-TOUTIAO
+						this.animation.opacity(1);
+						// #endif
 						this.animation.scale(2).step();
+						this.translateMax = initX / 2;
+						this.translateMin = (initX - this.width) / 2;
 						this.translateX = 0;
 					}
 					this.zoomIn = !this.zoomIn;
@@ -614,24 +628,25 @@
 				// #endif
 			},
 			touchstart(e) {
-				// #ifndef MP-BAIDU || MP-ALIPAY
+				// #ifndef MP-BAIDU || MP-ALIPAY || APP-PLUS
 				if (e.touches.length == 1)
-					this.lastX = e.touches[0].pageX;
+					this.initX = this.lastX = e.touches[0].pageX;
 				// #endif
 			},
 			touchmove(e) {
-				// #ifndef MP-BAIDU || MP-ALIPAY
+				// #ifndef MP-BAIDU || MP-ALIPAY || APP-PLUS
 				var diff = e.touches[0].pageX - this.lastX;
 				if (this.zoomIn && e.touches.length == 1 && Math.abs(diff) > 20) {
-					this.translateX += diff;
-					if (Math.abs(this.translateX) < 100)
-						this.animation.translateX(this.translateX).step();
-					else {
-						this.animation.translateX(0).scale(1).step();
-						this.zoomIn = false;
-					}
-					this.showAnimation = this.animation.export();
 					this.lastX = e.touches[0].pageX;
+					if ((this.translateX <= this.translateMin && diff < 0) || (this.translateX >= this.translateMax && diff > 0))
+						return;
+					this.translateX += (diff * Math.abs(this.lastX - this.initX) * 0.05);
+					if (this.translateX < this.translateMin)
+						this.translateX = this.translateMin;
+					if (this.translateX > this.translateMax)
+						this.translateX = this.translateMax;
+					this.animation.translateX(this.translateX).step();
+					this.showAnimation = this.animation.export();
 				}
 				// #endif
 			},
@@ -647,12 +662,16 @@
 </script>
 
 <style>
-	/* #ifndef MP-BAIDU */
-	:host {
-		display: block;
-		overflow: scroll;
-		-webkit-overflow-scrolling: touch;
-	}
+  /* #ifndef MP-WEIXIN || APP-PLUS */
+  :host {
+    display: block;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
 
-	/* #endif */
+  ._contain {
+    display: inherit;
+  }
+
+  /* #endif */
 </style>

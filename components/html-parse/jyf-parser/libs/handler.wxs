@@ -4,34 +4,15 @@
  文档地址：https://jin-yufeng.github.io/Parser
  author：JinYufeng
 */
-var inlineTags = {
-	abbr: true,
-	b: true,
-	big: true,
-	code: true,
-	del: true,
-	em: true,
-	font: true,
-	i: true,
-	ins: true,
-	label: true,
-	mark: true,
-	q: true,
-	s: true,
-	small: true,
-	span: true,
-	strong: true,
-	u: true
-}
 module.exports = {
 	getStyle: function(style, display) {
 		var tmp, res = "";
 		if (style) {
 			style = style.toLowerCase();
-			if (style.indexOf("float") != -1) res += style.match(getRegExp("float[^;]+(?![\s\S]*?float)"))[0];
+			if (style.indexOf("float") != -1) res += style.match(getRegExp("float[^;]+", "g")).pop();
 			if (style.indexOf("margin") != -1) res += (';' + style.match(getRegExp("margin[^;]+", "g")).join(';'));
-			if (style.indexOf("display") != -1 && (tmp = style.match(getRegExp("display\s*:\s*([^;]*)(?![\s\S]*?display)")),
-					tmp[1].indexOf("flex") == -1)) res += (';' + tmp[0]);
+			if (style.indexOf("display") != -1 && (tmp = style.match(getRegExp("display[^;]+", "g")).pop(), tmp.indexOf("flex") ==
+					-1)) res += (';' + tmp);
 			else res += (';display:' + display);
 			tmp = style.match(getRegExp("flex[^;]*:[^;]+", "g"));
 			if (tmp) res += (';' + tmp.join(';'));
@@ -39,15 +20,14 @@ module.exports = {
 		} else res = ("display:" + display);
 		return res;
 	},
-	setImgStyle: function(item, imgMode, imgLoad) {
+	setImgStyle: function(item, imgLoad) {
 		var img = {
 			name: "img",
 			attrs: JSON.parse(JSON.stringify(item.attrs))
 		}
 		if (img.attrs.style)
-			img.attrs.style = img.attrs.style.toLowerCase().replace(getRegExp("width[^;]*?%", "g"), "width:100%").replace(
+			img.attrs.style = img.attrs.style.toLowerCase().replace(getRegExp("width[^;]+%", "g"), "width:100%").replace(
 				getRegExp('margin[^;]+', "g"), "");
-		if (imgMode == "widthFix") img.attrs.style = (img.attrs.style || '') + ";height:auto !important";
 		if (!imgLoad) {
 			delete img.attrs.src;
 			img.attrs.style += ";width:20px !important;height:20px !important";
@@ -61,13 +41,10 @@ module.exports = {
 				attrs: JSON.parse(JSON.stringify(item.attrs)),
 				children: item.children
 			}
-			newItem.attrs.style = newItem.attrs.style.toLowerCase().replace(getRegExp("width[^;]*?%", "g"), "width:100%").replace(
+			newItem.attrs.style = newItem.attrs.style.toLowerCase().replace(getRegExp("width[^;]+%", "g"), "width:100%").replace(
 				getRegExp('margin[^;]+', "g"), "");
 			return [newItem];
 		}
 		return [item];
-	},
-	isInlineTag: function(name) {
-		return !!inlineTags[name];
 	}
 }
